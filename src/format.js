@@ -54,7 +54,20 @@ function processValue(value, maskObj, options) {
 	valObj.sign = isNegative ? "-" : "";
 
 	// Fix the decimal first, toFixed will auto fill trailing zero.
-	valObj.value = Number(valObj.value).toFixed(maskObj.fraction && maskObj.fraction.length);
+	const fracLenTarget = maskObj.fraction && maskObj.fraction.length;
+	if (options.noRounding && fracLenTarget > 0 && Number(valObj.value) % 1 > 0) {
+		
+		const strVal = Number(valObj.value).toString();
+		const fracLen = strVal.length - strVal.indexOf(".") - 1;
+		if (fracLen <= fracLenTarget) {
+			valObj.value = strVal.padEnd(strVal.length + (fracLenTarget - fracLen), "0");
+		} else {
+			valObj.value = strVal.slice(0, strVal.length - (fracLen - fracLenTarget));
+		}
+
+	} else {
+		valObj.value = Number(valObj.value).toFixed(fracLenTarget);
+	}
 	// Convert number to string to trim off *all* trailing decimal zero(es)
 	valObj.value = Number(valObj.value).toString();
 
